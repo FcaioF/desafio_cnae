@@ -14,7 +14,6 @@ def create_bucket(s3_session,bucket_name):
 
     return
     
-
 def create_directories(bucket_name,directory_name):
     (
      bucket_name
@@ -23,17 +22,14 @@ def create_directories(bucket_name,directory_name):
     return print(f'directory {directory_name} created!')
 
 #function used to upload data to s3 bucket
-def upload_data(s3_session,local_path,bucket,s3_path):
-    # s3_session.upload_file(
-    #     local_path
-    #     ,bucket
-    #     ,s3_path)
-
-    s3_session.put_object(
-        Body=local_path
-        ,Bucket=bucket
-        ,Key=s3_path)
-    return print('data inserted!')
+def upload_data(s3_session,local_path,bucket,s3_path,file_name):
+     local_path = local_path + file_name
+     s3_path = s3_path + file_name
+     s3_session.upload_file(
+         local_path
+         ,bucket
+         ,s3_path)
+     return print(f'{file_name} file uploaded!')
 
 #aws profile to boto3 connect
 aws_profile_name= 'caio_pessoal_dev'
@@ -51,18 +47,13 @@ directories= [
     'external/flatfile/estabelecimentos/'
 ]
 
-#creatin boto session to aws env
+#create boto session to aws s3 env
 s3_boto_session = boto3.Session(profile_name=aws_profile_name).resource('s3')
 print('sucessfuly connected to s3 session!')
 
+#create boto client to aws s3 env
 s3_boto_client = boto3.Session(profile_name=aws_profile_name).client('s3')
 print('sucessfuly connected to s3 client!')
-
-# s3_client = boto3.client(
-#     's3',
-#     aws_access_key_id='YOUR_ACCESS_KEY_ID',
-#     aws_secret_access_key='YOUR_SECRET_ACCESS_KEY'
-# )
 
 #bronze bucket object
 bronze_bucket= s3_boto_session.Bucket(bucket_name[0])
@@ -74,24 +65,16 @@ for i in bucket_name:
 for i in directories:
      create_directories(bronze_bucket,i)
 
-cnaes_path = 'D://caiof//Documents//GIT_Repos//desafio_cnae//data_source//cnaes//cnaes.csv'
-estabelecimentos_path = 'D://caiof//Documents//GIT_Repos//desafio_cnae//data_source//cnaes//'
-
-
+#local machine directories
+cnaes_path = 'D://caiof//Documents//GIT_Repos//desafio_cnae//data_source//cnaes//'
+estabelecimentos_path = 'D://caiof//Documents//GIT_Repos//desafio_cnae//data_source//estabelecimentos//'
 
 #upload cnaes file
-upload_data(s3_boto_client,cnaes_path,bronze_bucket,directories[0])
+for file in os.listdir(cnaes_path):
+    upload_data(s3_boto_client,cnaes_path,bucket_name[0],directories[0],file)
 
 #upload estabelecimentos files
-for i in os.listdir(estabelecimentos_path):
-    upload_data(s3_boto_client,estabelecimentos_path+i,bronze_bucket,directories[1])
-
+for file in os.listdir(estabelecimentos_path):
+    upload_data(s3_boto_client,estabelecimentos_path,bucket_name[0],directories[1],file)
 
 print('all done!')
-    
-
-
-
-
-
-
