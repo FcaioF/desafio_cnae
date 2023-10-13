@@ -13,7 +13,8 @@ def create_bucket(s3_session,bucket_name):
         print(f'bucket {bucket_name} alredy exist!')
 
     return
-    
+
+#function used to create directories in s3
 def create_directories(bucket_name,directory_name):
     (
      bucket_name
